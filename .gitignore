@@ -1,52 +1,15 @@
-# Prerequisites
-*.d
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# Environments
+.env
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# Jupyter Notebook
+.ipynb_checkpoints
 
-# Precompiled Headers
-*.gch
-*.pch
+.idea/
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+# python cache
+__pycache__/
+*.pyc
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# excluding other files inside config folder
+config/*
