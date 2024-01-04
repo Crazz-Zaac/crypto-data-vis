@@ -12,4 +12,4 @@ __pycache__/
 *.pyc
 
 # excluding other files inside config folder
-config/*
+config/config.ini
