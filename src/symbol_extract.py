@@ -13,7 +13,7 @@ class ExtractSymbol:
             sorted_symbols = sorted(ticker_data, key=lambda x: float(x['quoteVolume']), reverse=True)
             symbols = [symbol['symbol'] for symbol in sorted_symbols]
             
-            return symbols
+            return tuple(symbols)
 
         else:
             raise Exception("Failed to fetch data.")
