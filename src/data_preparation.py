@@ -2,6 +2,8 @@ import requests
 from configparser import ConfigParser
 import csv
 import os
+import pandas as pd
+from settings import CONFIG_DIR, DATASET_DIR
 
 class DataPreparation:
     def __init__(self, symb, start, end):
@@ -12,13 +14,12 @@ class DataPreparation:
         self.end_time = end
         
     def getData(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__)).replace('src', '')
         config = ConfigParser()
-        config_path = os.path.join(current_dir, 'config/config.ini')
+        config_path = CONFIG_DIR + '/' + 'config.ini' 
         config.read(config_path)
         api_key = config.get('API', 'api_key')
         
-        directory_path = os.path.join(current_dir, 'data/raw_data/')
+        directory_path = DATASET_DIR + '/raw_data/' 
         
         params = {
             'symbol': self.symbol,
@@ -38,12 +39,17 @@ class DataPreparation:
         
         if response.status_code == 200:
             data = response.json()
-            print(data)
+            print(f"Retrieved {len(data)} candlesticks for {self.symbol} in given date")
+            
             file_path = os.path.join(directory_path, f"{self.symbol.lower()}_candlesticks.csv")
+            
+            # checking if the file already exists to delete it and creat a new one
+            if os.path.exists(file_path):
+                os.remove(file_path)
 
             with open(file_path, mode='w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(["Timestamp", "Open", "High", "Low", "Close", "Volume"])
+                writer.writerow(["Timestamp", "Open", "High", "Low", "Close", "Volume", "Date"])
                 
                 for candlestick in data:
                     timestamp = candlestick[0]
@@ -52,8 +58,13 @@ class DataPreparation:
                     low_price = candlestick[3]
                     close_price = candlestick[4]
                     volume = candlestick[5]
-                    
+                    date = pd.to_datetime(timestamp, unit='ms')
                     # Writing each candlestick data as a row in the CSV file
-                    writer.writerow([timestamp, open_price, high_price, low_price, close_price, volume])
+                    writer.writerow([timestamp, open_price, high_price, low_price, close_price, volume, date])
+            
+            df = pd.read_csv(file_path)
+            df['Date'] = pd.to_datetime(df['Timestamp'], unit='ms')
+            
+            print(f"Data saved to {self.symbol.lower()}_candlesticks.csv")
         else:
             raise Exception("Failed to fetch and save data")
