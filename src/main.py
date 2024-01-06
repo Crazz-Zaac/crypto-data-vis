@@ -3,6 +3,7 @@ import datetime
 from symbol_extract import ExtractSymbol
 from data_preparation import DataPreparation
 from streamlit_date_picker import date_range_picker, PickerType, Unit, date_picker
+from data_cleaning import DataClean
 
 st.title("Visualize and Explore Cryptocurrencies Data")
 
@@ -14,6 +15,7 @@ extractor = ExtractSymbol(url='https://api.binance.com/api/v3/ticker/24hr')
 symbols_list = extractor.getSymbols()
 
 # Create a form context
+@st.cache_data
 with st.sidebar.form(key='my_form'):
     # A selectbox for symbol selection in the sidebar inside the form
     crypto_symb = st.selectbox(
@@ -61,3 +63,10 @@ with st.sidebar.form(key='my_form'):
             data_prep.getData()
         else:
             st.warning("Please select a crypto symbol before submitting")
+
+
+# if st.sidebar.button("Clean Data"):
+st.sidebar.header("Visualize Data")
+option = st.sidebar.selectbox('Choose an option',('','View Data', 'View Candlestick'))
+if option == 'View Candlestick':
+    
