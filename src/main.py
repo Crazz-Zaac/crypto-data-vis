@@ -15,6 +15,7 @@ extractor = ExtractSymbol(url='https://api.binance.com/api/v3/ticker/24hr')
 symbols_list = extractor.getSymbols()
 
 # Create a form context
+@st.cache_data
 with st.sidebar.form(key='my_form'):
     # A selectbox for symbol selection in the sidebar inside the form
     crypto_symb = st.selectbox(
