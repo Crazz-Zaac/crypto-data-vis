@@ -10,6 +10,14 @@ st.title("Visualize and Explore Cryptocurrencies Data")
 # Binance API endpoint for historical kline/candlestick data
 url = 'https://api.binance.com/api/v3/klines'
 
+def marketCap(self):
+    # Market Cap visualization of 250 Crypto currencies
+    import plotly.express as px
+    stock_data = pd.read_csv(self.clean_dataset_path + 'crypto_data.csv')
+    fig = px.bar(stock_data, x='Name', y='Market Cap', title='Market Cap Comparison')
+    fig.update_layout(height=600)
+    st.plotly_chart(fig, use_container_width=True)
+
 # A selectbox to the sidebar for symbol selection
 extractor = ExtractSymbol(url='https://api.binance.com/api/v3/ticker/24hr')
 symbols_list = extractor.getSymbols()
@@ -67,6 +75,7 @@ with st.sidebar.form(key='my_form'):
 
 # if st.sidebar.button("Clean Data"):
 st.sidebar.header("Visualize Data")
-option = st.sidebar.selectbox('Choose an option',('','View Data', 'View Candlestick'))
+option = st.sidebar.selectbox('Choose an option',
+                              ('','View Data', 'View Candlestick', 'Compare multiple stocks'))
 if option == 'View Candlestick':
     
