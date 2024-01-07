@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 from bokeh.plotting import figure, column
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 import talib
 from settings import DATASET_DIR
 
@@ -33,8 +34,8 @@ class DataVis:
                             go.Scatter(x=df['Timestamp'], y=df['WMA'], line=dict(color='#7CFC00', width=2), mode='lines', name='WMA'),
                             go.Scatter(x=df['Timestamp'], y=df['DEMA'], line=dict(color='#00FFFF', width=2), mode='lines', name='DEMA'),
                             go.Scatter(x=df['Timestamp'], y=df['TEMA'], line=dict(color='#FFA500', width=2), mode='lines', name='TEMA'),
-                            go.Scatter(x=df['Timestamp'], y=df['RSI'], line=dict(color='#A12FF8', width=2), mode='lines', name='RSI'),
-                            go.Scatter(x=df['Timestamp'], y=df['MOM'], line=dict(color='#FF1493', width=2), mode='lines', name='MOM')                            
+                            go.Scatter(x=df['Timestamp'], y=df['RSI'], line=dict(color='#A12FF8', width=1), mode='lines', name='RSI'),
+                            go.Scatter(x=df['Timestamp'], y=df['MOM'], line=dict(color='#FF1493', width=1), mode='lines', name='MOM')                            
                             ])
         
         fig.update_layout(
@@ -48,6 +49,39 @@ class DataVis:
         fig.update_yaxes(title_text="Price ($)")
 
         return fig
+    
+    def volatilityMetrics(self):
+        stock_data = pd.read_csv(self.clean_dataset_path + self.f_name.lower()+ '_technical_indicators.csv')
+        stock_data['ATR'] = stock_data['High'] - stock_data['Low']
+        stock_data['ATR'] = stock_data['ATR'].ewm(span=14, adjust=False).mean()
+        
+        # Calculate rolling standard deviation for volatility
+        stock_data['Volatility'] = stock_data['Close'].rolling(window=14).std()
+        
+        stock_data['Date'] = pd.to_datetime(stock_data['Date'])  # Convert 'Date' column to datetime if needed
+        stock_data.set_index('Date', inplace=True)  # Set 'Date' as the index
+
+        # Plotting
+        plt.figure(figsize=(10, 6))
+
+        # Plot ATR
+        plt.plot(stock_data.index, stock_data['ATR'], label='ATR', color='blue')
+
+        # Plot Volatility (rolling standard deviation)
+        plt.plot(stock_data.index, stock_data['Volatility'], label='Volatility', color='red')
+
+        plt.title('Volatility Metrics - ATR and Volatility (Rolling Std)')
+        plt.xlabel('Date')
+        plt.ylabel('Value')
+        plt.legend()
+        plt.grid()
+
+        st.pyplot(plt)
+    
+    # def volumeAnalysis(self):
+        
+ 
+    
 
 
 talib_indicators = ["MA", "EMA", "SMA", "WMA", "RSI", "MOM", "DEMA", "TEMA"]
@@ -62,5 +96,10 @@ data_visualizer = DataVis(f_name=symbol)
 fig = data_visualizer.candleStick()
 
 st.plotly_chart(fig)
+
+data_visualizer.volatilityMetrics()
+
+
+
 
     
