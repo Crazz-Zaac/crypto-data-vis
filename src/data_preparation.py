@@ -42,6 +42,7 @@ class DataPreparation:
         if response.status_code == 200:
             data = response.json()
             
+            
             file_path = os.path.join(directory_path, f"{self.symbol.lower()}.csv")
             
             # checking if the file already exists to delete it and creat a new one
