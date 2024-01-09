@@ -1,25 +1,26 @@
 import streamlit as st
 from settings import DATASET_DIR
-import requests, math
+import requests, math, os
 import pandas as pd
 import numpy as np
 from requests_html import HTMLSession
 from streamlit_pagination import pagination_component
-
+from pycoingecko import CoinGeckoAPI
 
 
 class StockCompare:
     
-    def __init__(self, amount, from_currency, to_currency):
-        self.file_path = DATASET_DIR + '/' + 'processed_data/crypto_data.csv'' 
-        self.amount = amount
-        self.frm_curr = from_currency
-        self.to_curr = to_currency
+    def __init__(self):
+        self.file_path = DATASET_DIR + '/' + 'processed_data/crypto_data.csv'
+        self.cg = CoinGeckoAPI()
+        # self.amount = amount
+        # self.frm_curr = from_currency
+        # self.to_curr = to_currency
 
     def visualizeData(self):
-        df = pd.read_csv(self.file_path+'crypto_data.csv')
+        df = pd.read_csv(self.file_path)
         # print(df)
-        # df.drop(columns=["Name", "52 Week Range", "Day Chart"], inplace=True, axis=1)
+        df = df.drop(columns="Name")
         style = """
         <style>
         th {
@@ -59,6 +60,7 @@ class StockCompare:
         # Display "Page X of Y" indicator
         st.text(f"Page {page_number} of {total_pages}")
         
+        st.dataframe(df.describe())
         
         # statistical summaries
         
@@ -67,17 +69,12 @@ class StockCompare:
         #top performers
         
     
-    def currencyConversion(self):
-        df = pd.read_csv(self.file_path)
-        if from_currency not in df['Symbol'].values or to_currency not in df['Symbol'].values:
-            return None  # Invalid currency
-        
-        from_value = df.loc[df['Symbol'] == from_currency, 'Price'].values[0]
-        to_value = df.loc[df['Symbol'] == to_currency, 'Price'].values[0]
-
-        converted_amount = (amount * to_value) / from_value
+    def currencyConversion(self, amount, from_currency, to_currency):
+        from_value = self.cg.get_price(ids=from_currency, vs_currencies='usd')[from_currency]['usd']
+        to_value = self.cg.get_price(ids=to_currency, vs_currencies='usd')[to_currency]['usd']
+        converted_amount = (amount * from_value) / to_value
         return converted_amount
-        
+               
     
 
 
@@ -89,31 +86,52 @@ def getStockData(file_path):
     crypto = tables[0].copy()
     
     # Remove unwanted columns
-    columns_to_drop = ["Name", "52 Week Range", "Day Chart", "Supply"]
+    columns_to_drop = ["52 Week Range", "Day Chart"]
     crypto.drop(columns=columns_to_drop, inplace=True)
     
     # Save to a CSV file
     crypto.to_csv(file_path+'crypto_data.csv', index=False)  # Saves the DataFrame to a CSV file
     
     # Get unique cryptocurrency symbols from the dataset
-    df = pd.read_csv(stkcmp.file_path + 'crypto_data.csv')
-    currencies = df['Symbol'].unique()
+    df = pd.read_csv(file_path + 'crypto_data.csv')
+    currencies = df['Name'].unique()
     return currencies
 
 
 def main():
+    st.markdown("<h1>Exploring <span style='color: #b97010;'>Cryptocurrency</span> 💲 Data</h1>", unsafe_allow_html=True)
     file_path = DATASET_DIR + '/' + 'processed_data/'
-    currency_list = getStockData(file_path)
+    # Check if 'crypto_data.csv' file exists
+    if not os.path.isfile(file_path + 'crypto_data.csv'):
+        currency_list = getStockData(file_path)
+    else:
+        df = pd.read_csv(file_path + 'crypto_data.csv')
+        currency_list = df['Name'].unique().tolist()
     
-    amount = st.number_input("Enter amount")
-    from_currency = st.selectbox("From currency", currencies)
+    # print(currency_list)
     
-    
-    
-    
-    stkcmp = StockCompare()
-    stkcmp.getStockData()
+    stkcmp = StockCompare()    
     stkcmp.visualizeData()
+    
+    st.markdown("<h3><span style='color: #b97010;'>Cryptocurrency</span> 💲 Conversion</h3>", unsafe_allow_html=True)
+
+    with st.form(key='conversion_form'):
+        # A selectbox for symbol selection in the sidebar inside the form
+        amount = st.number_input("Enter amount")
+        from_currency = st.selectbox("From currency", currency_list)
+        
+        # Update currency_list for to_currency by removing from_currency
+        to_currency_options = [currency for currency in currency_list if currency != from_currency]
+        to_currency = st.selectbox("To currency", to_currency_options)
+        
+        # Add a form submit button
+        submit_button = st.form_submit_button(label='Convert')
+        if submit_button:
+            result = stkcmp.currencyConversion(amount, from_currency.replace("USD", "").strip().lower(), to_currency.replace("USD", "").strip().lower())
+            if result is not None:
+                st.write(f"Equivalent amount: {amount} {from_currency.upper()} = {result:.2f} {to_currency.upper()}")
+            else:
+                st.warning("Invalid currency")
 
 
 if __name__ == '__main__':
