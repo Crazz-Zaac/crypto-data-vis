@@ -3,11 +3,11 @@ import datetime
 from symbol_extract import ExtractSymbol
 from data_preparation import DataPreparation
 from streamlit_date_picker import date_range_picker, PickerType, Unit, date_picker
-from data_cleaning import DataClean
+# from data_cleaning import DataClean
 from data_visualize import DataVis
-from compare_stock import StockCompare
+from compare_stocks import main
 
-st.markdown("<h1>Visualize and Explore <span style='color: #b97010;'>Cryptocurrency</span> 💲</h1>", unsafe_allow_html=True)
+
 
 # Binance API endpoint for historical kline/candlestick data
 url = 'https://api.binance.com/api/v3/klines'
@@ -32,7 +32,7 @@ option = st.sidebar.radio('Choose an option',
                               ('View Just One Stock', 'Compare multiple stocks'))
 
 if option == 'View Just One Stock':
-        
+    st.markdown("<h1>Visualize and Explore <span style='color: #b97010;'>Cryptocurrency</span> 💲</h1>", unsafe_allow_html=True)
     with st.sidebar.form(key='my_form'):
         # A selectbox for symbol selection in the sidebar inside the form
         crypto_symb = st.selectbox(
@@ -127,8 +127,7 @@ if option == 'View Just One Stock':
         data_vis.movingAverageConvergenceDivergence()
 
 else:
-    st.write("Here we come brother")
-    stk_cmp = StockCompare()
+    main()
 
 # if st.sidebar.button("Clean Data"):
     
