@@ -232,6 +232,7 @@ def getStockData(file_path):
 def main():
     st.markdown("<h1>Exploring <span style='color: #b97010;'>Cryptocurrency</span> 💲 Data</h1>", unsafe_allow_html=True)
     file_path = DATASET_DIR + '/' + 'processed_data/'
+    
     # Check if 'crypto_data.csv' file exists
     if not os.path.isfile(file_path + 'crypto_data.csv'):
         currency_list = getStockData(file_path)
@@ -241,34 +242,47 @@ def main():
     
     
     stkcmp = StockCompare()  
-    stkcmp.visualizeData()
+    
+    st.sidebar.header("Select to Analyse Data")
+    show_data = st.sidebar.checkbox('View data')
+    show_pieChart = st.sidebar.checkbox('Show pie chart distribution')
+    show_topPerformers = st.sidebar.checkbox('View top performers')
+    show_heat_map = st.sidebar.checkbox('View heatmap Chart')
+    show_calculator = st.sidebar.checkbox('Convert cryptocurrency')
     
     
-    st.markdown("<h3><span style='color: green;'>Top</span> performing Stocks 💲</h3>", unsafe_allow_html=True)
-    stkcmp.pieChart()
+    if show_data:
+        stkcmp.visualizeData()
     
-    stkcmp.topPerformers()
+    if show_pieChart:
+        stkcmp.pieChart()
+    
+    if show_topPerformers:
+        st.markdown("<h3><span style='color: green;'>Top</span> performing Stocks 💲</h3>", unsafe_allow_html=True)
+        stkcmp.topPerformers()
 
-    stkcmp.heatmapChart()
+    if show_heat_map:
+        stkcmp.heatmapChart()
     
-    st.markdown("<h3><span style='color: #b97010;'>Cryptocurrency</span> 💲 Conversion</h3>", unsafe_allow_html=True)
-    with st.form(key='conversion_form'):
-        # A selectbox for symbol selection in the sidebar inside the form
-        amount = st.number_input("Enter amount")
-        from_currency = st.selectbox("From currency", currency_list)
-        
-        # Update currency_list for to_currency by removing from_currency
-        to_currency_options = [currency for currency in currency_list if currency != from_currency]
-        to_currency = st.selectbox("To currency", to_currency_options)
-        
-        # Add a form submit button
-        submit_button = st.form_submit_button(label='Convert')
-        if submit_button:
-            result = stkcmp.currencyConversion(amount, from_currency.replace("USD", "").strip().lower(), to_currency.replace("USD", "").strip().lower())
-            if result is not None:
-                st.write(f"Equivalent amount: {amount} {from_currency.upper()} = {result:.2f} {to_currency.upper()}")
-            else:
-                st.warning("Invalid currency")
+    if show_calculator:
+        st.markdown("<h3><span style='color: #b97010;'>Cryptocurrency</span> 💲 Conversion</h3>", unsafe_allow_html=True)
+        with st.form(key='conversion_form'):
+            # A selectbox for symbol selection in the sidebar inside the form
+            amount = st.number_input("Enter amount")
+            from_currency = st.selectbox("From currency", currency_list)
+            
+            # Update currency_list for to_currency by removing from_currency
+            to_currency_options = [currency for currency in currency_list if currency != from_currency]
+            to_currency = st.selectbox("To currency", to_currency_options)
+            
+            # Add a form submit button
+            submit_button = st.form_submit_button(label='Convert')
+            if submit_button:
+                result = stkcmp.currencyConversion(amount, from_currency.replace("USD", "").strip().lower(), to_currency.replace("USD", "").strip().lower())
+                if result is not None:
+                    st.write(f"Equivalent amount: {amount} {from_currency.upper()} = {result:.2f} {to_currency.upper()}")
+                else:
+                    st.warning("Invalid currency")
 
 
 if __name__ == '__main__':
